@@ -1,4 +1,5 @@
 export function examplesHTML(data,esc){
+ if(data.revised)return '';
  let rows=[];
  if(/수당|심사|회의/.test(data.query))rows=[
  ['외부위원이 위원회에 2시간 참석','100,000원','위원회 관리 규정 제9조·별표 제1항. 지급대상에 해당하고 별도 기준이 없는 경우의 기본 참석수당입니다.',221],

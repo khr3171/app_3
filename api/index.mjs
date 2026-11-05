@@ -1,4 +1,6 @@
 import {submitSuggestion} from '../lib/suggestions.mjs';
+import {authorizeAdmin,adminSuggestions} from '../lib/admin.mjs';
+import {revisionAdmin,publicRevisions,revisionSource} from '../lib/revisions.mjs';
 import {search} from '../lib/search.mjs';
 import {authorize,localOnly} from '../lib/auth.mjs';
 import {externalSearch} from '../lib/external.mjs';
@@ -8,6 +10,15 @@ export default async function handler(req,res){
  res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
  const url=new URL(req.url,'http://localhost');const route=url.searchParams.get('route')||url.pathname.replace('/api/','');
  try{
+ if(route.startsWith('admin-')){
+ const user=await authorizeAdmin(req);
+ if(route==='admin-me'&&req.method==='GET')return send(res,200,{email:user.email});
+ if(route==='admin-suggestions'&&req.method==='GET')return send(res,200,await adminSuggestions(url));
+ if(route==='admin-revisions')return send(res,200,await revisionAdmin(req,user));
+ return send(res,405,{error:'허용되지 않는 요청입니다.'});
+ }
+ if(route==='public-revisions'&&req.method==='GET')return send(res,200,process.env.FIREBASE_PROJECT_ID?await publicRevisions(url.searchParams.get('id')):{revisions:[]});
+ if(route==='revision-source'&&req.method==='GET'){const file=await revisionSource(url.searchParams.get('id'),url.searchParams.get('part'));if(!file.bytes)return send(res,200,file);res.setHeader('Content-Type',file.type);res.statusCode=200;return res.end(file.bytes);}
  if(route==='suggestions')return send(res,200,await submitSuggestion(req));
  if(req.method!=='GET')return send(res,405,{error:'허용되지 않는 요청입니다.'});
  if(route==='config')return send(res,200,{local:localOnly(req),firebase:JSON.parse(process.env.FIREBASE_WEB_CONFIG||'null'),externalConnected:Boolean(process.env.TAVILY_API_KEY)});
