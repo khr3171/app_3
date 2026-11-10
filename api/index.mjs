@@ -39,5 +39,5 @@ export default async function handler(req,res){
  return res.end(bytes);
  }
  return send(res,404,{error:'요청을 찾을 수 없습니다.'});
- }catch(e){if(e.code===8||e.code==='resource-exhausted')return send(res,429,{error:'무료 사용 한도에 도달하여 일시적으로 이용할 수 없습니다. 유료 요금제로 자동 전환하지 않습니다. 한도 초기화 후 다시 이용해주세요.'});return send(res,e.status||500,{error:e.status?e.message:'처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'});}
+ }catch(e){console.error('API failure', {route,code:e.code,name:e.name,message:e.message});if(e.code===8||e.code==='resource-exhausted')return send(res,429,{error:'무료 사용 한도에 도달하여 일시적으로 이용할 수 없습니다. 유료 요금제로 자동 전환하지 않습니다. 한도 초기화 후 다시 이용해주세요.'});return send(res,e.status||500,{error:e.status?e.message:'처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'});}
 }
